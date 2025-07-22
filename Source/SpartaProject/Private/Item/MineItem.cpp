@@ -26,6 +26,16 @@ void AMineItem::ActivateItem(AActor* Activator)
 	GetWorld()->GetTimerManager().SetTimer(ExplosionTimerHandle, this, &AMineItem::Explode, ExplosionDelay);
 	
 	bHasExploded = true;
+
+	if (DynamicMaterial)
+	{
+		DynamicMaterial->SetScalarParameterValue("Emission", 100.0f);
+	}
+}
+
+bool AMineItem::IsItemActivated() const
+{
+	return bHasExploded;
 }
 
 void AMineItem::Explode()

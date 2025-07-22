@@ -79,7 +79,7 @@ void ABaseItem::ActivateItem(AActor* Activator)
 					WeakParticle->DestroyComponent();
 				}
 			},
-			2.0f,
+			3.0f,
 			false);
 	}
 }

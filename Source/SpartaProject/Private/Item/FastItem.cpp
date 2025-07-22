@@ -1,23 +1,24 @@
-#include "Item/HealingItem.h"
+#include "Item/FastItem.h"
+
+#include "Buff/FastBuff.h"
 #include "SpartaCharacter.h"
 
-AHealingItem::AHealingItem()
+AFastItem::AFastItem()
 {
-	ItemType = "Healing";
-	HealAmount = 20.0f;
+	ItemType = "Fast";
 }
 
-void AHealingItem::ActivateItem(AActor* Activator)
+void AFastItem::ActivateItem(AActor* Activator)
 {
 	Super::ActivateItem(Activator);
-	
+
 	if (Activator && Activator->ActorHasTag("Player"))
 	{
 		if (ASpartaCharacter* Character = Cast<ASpartaCharacter>(Activator))
 		{
-			Character->AddHealth(HealAmount);
+			Character->AddBuff(UFastBuff::StaticClass());
 		}
-		
+
 		DestroyItem();
 	}
 }

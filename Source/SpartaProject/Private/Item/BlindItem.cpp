@@ -1,23 +1,24 @@
-#include "Item/HealingItem.h"
-#include "SpartaCharacter.h"
+#include "Item/BlindItem.h"
 
-AHealingItem::AHealingItem()
+#include "SpartaCharacter.h"
+#include "Buff/BlindBuff.h"
+
+ABlindItem::ABlindItem()
 {
-	ItemType = "Healing";
-	HealAmount = 20.0f;
+	ItemType = "Blind";
 }
 
-void AHealingItem::ActivateItem(AActor* Activator)
+void ABlindItem::ActivateItem(AActor* Activator)
 {
 	Super::ActivateItem(Activator);
-	
+
 	if (Activator && Activator->ActorHasTag("Player"))
 	{
 		if (ASpartaCharacter* Character = Cast<ASpartaCharacter>(Activator))
 		{
-			Character->AddHealth(HealAmount);
+			Character->AddBuff(UBlindBuff::StaticClass());
 		}
-		
+
 		DestroyItem();
 	}
 }

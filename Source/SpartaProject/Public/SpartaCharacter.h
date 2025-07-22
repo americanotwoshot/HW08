@@ -4,7 +4,7 @@
 #include "GameFramework/Character.h"
 #include "SpartaCharacter.generated.h"
 
-class UWidgetComponent;
+class UBuffBase;
 struct FInputActionValue;
 class UCameraComponent;
 class USpringArmComponent;
@@ -22,9 +22,9 @@ public:
 	USpringArmComponent* SpringArmComp;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComp;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
-	UWidgetComponent* OverheadWidget;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Move")
+	float InitialSpeed;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Move")
 	float NormalSpeed;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Move")
@@ -39,6 +39,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	int32 CurrentHealth;
 
+	UPROPERTY()
+	TMap<TSubclassOf<UBuffBase>, UBuffBase*> ActiveBuffs;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -52,6 +55,12 @@ public:
 	int32 GetHealth() const;
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void AddHealth(int32 Amount);
+
+	void AddBuff(TSubclassOf<UBuffBase> BuffClass);
+	void RemoveBuff(TSubclassOf<UBuffBase> BuffClass);
+	void SetSpeed(float SpeedMultiplier);
+	void ResetSpeed(float SpeedMultiplier);
+	void SetReverseControl(const bool bReverse);
 	
 private:
 	UFUNCTION()
@@ -67,5 +76,7 @@ private:
 	UFUNCTION()
 	void StopSprint(const FInputActionValue& Value);
 
-	void UpdateOverheadHp();
+	void UpdateHpGauge();
+
+	bool bIsReverseControl;
 };

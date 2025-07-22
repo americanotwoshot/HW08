@@ -21,16 +21,27 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Coin")
 	int32 CollectedCoinCount;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Level")
-	float LevelDuration;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Level")
 	int32 CurrentLevelIndex;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Level")
 	int32 MaxLevelIndex;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Level")
 	TArray<FName> LevelMapNames;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wave")
+	float WaveDuration;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wave")
+	int32 CurrentWaveIndex;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wave")
+	int32 MaxWaveIndex;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave")
+	TArray<int32> WaveItemCount;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave")
+	int32 SpawnedObstacleCount;
+	UPROPERTY()
+	TArray<AActor*> FoundMines;
 
-	FTimerHandle LevelTimerHandle;
+	FTimerHandle WaveTimerHandle;
 	FTimerHandle HUDUpdateTimerHandle;
+	FTimerHandle ExplosionTimerHandle;
 	
 	UFUNCTION(BlueprintPure, Category = "Score")
 	int32 GetScore() const;
@@ -38,9 +49,16 @@ public:
 	void AddScore(int32 Amount);
 	UFUNCTION(BlueprintCallable, Category = "Level")
 	void OnGameOver();
+	UFUNCTION(BlueprintCallable, Category = "Level")
+	void LoadMenuLevel();
 	
 	void StartLevel();
 	void OnCoinCollected();
 	void EndLevel();
 	void UpdateHUD();
+	void StartWave();
+	void ExplodeMineItem();
+	AActor* GetRandomMineItem();
+	
+	int32 ExplosionCount;
 };

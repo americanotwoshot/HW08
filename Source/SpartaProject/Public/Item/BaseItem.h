@@ -15,6 +15,8 @@ class SPARTAPROJECT_API ABaseItem : public AActor, public IItemInterface
 public:	
 	ABaseItem();
 
+	virtual void ActivateItem(AActor* Activator) override;
+
 protected:
 	virtual void OnItemBeginOverlap(
 		UPrimitiveComponent* OverlappedComponent,
@@ -28,9 +30,8 @@ protected:
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex) override;
-	virtual void ActivateItem(AActor* Activator) override;
+	
 	virtual FName GetItemType() const override;
-
 	virtual void DestroyItem();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")

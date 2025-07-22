@@ -1,10 +1,11 @@
 #include "SpartaCharacter.h"
+#include "SpartaGameState.h"
 #include "SpartaPlayerController.h"
 #include "EnhancedInputComponent.h"
-#include "SpartaGameState.h"
+#include "Buff/BuffBase.h"
+#include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
-#include "Components/TextBlock.h"
-#include "Components/WidgetComponent.h"
+#include "Components/ProgressBar.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -21,11 +22,8 @@ ASpartaCharacter::ASpartaCharacter()
 	CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);
 	CameraComp->bUsePawnControlRotation = false;
 
-	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
-	OverheadWidget->SetupAttachment(GetMesh());
-	OverheadWidget->SetWidgetSpace(EWidgetSpace::Screen);
-
-	NormalSpeed = 600.0f;
+	InitialSpeed = 600.0f;
+	NormalSpeed = InitialSpeed;
 	SprintSpeedMultiplier = 1.5f;
 	SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
 	MouseSensitivity = 1.0f;
@@ -34,12 +32,14 @@ ASpartaCharacter::ASpartaCharacter()
 
 	MaxHealth = 100;
 	CurrentHealth = MaxHealth;
+
+	bIsReverseControl = false;
 }
 
 void ASpartaCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	UpdateOverheadHp();
+	UpdateHpGauge();
 }
 
 void ASpartaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -81,7 +81,8 @@ float ASpartaCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const
 	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	CurrentHealth = FMath::Clamp(CurrentHealth - ActualDamage, 0, MaxHealth);
-	UpdateOverheadHp();
+
+	UpdateHpGauge();
 	
 	if (CurrentHealth <= 0)
 	{
@@ -108,14 +109,76 @@ int32 ASpartaCharacter::GetHealth() const
 void ASpartaCharacter::AddHealth(int32 Amount)
 {
 	CurrentHealth = FMath::Clamp(CurrentHealth + Amount, 0, MaxHealth);
-	UpdateOverheadHp();
+	UpdateHpGauge();
+}
+
+void ASpartaCharacter::AddBuff(TSubclassOf<UBuffBase> BuffClass)
+{
+	if (!BuffClass) return;
+	
+	if (UBuffBase* ExistingBuff = ActiveBuffs.FindRef(BuffClass))
+	{
+		GetWorldTimerManager().ClearTimer(ExistingBuff->ExpireTimerHandle);
+		ExistingBuff->StartTimer(this);
+	}
+	else
+	{
+		UBuffBase* NewBuff = NewObject<UBuffBase>(this, BuffClass);
+		NewBuff->Activate(this);
+		NewBuff->StartTimer(this);
+		ActiveBuffs.Add(BuffClass, NewBuff);
+
+		if (ASpartaPlayerController* SpartaPlayerController = Cast<ASpartaPlayerController>(GetController()))
+		{
+			SpartaPlayerController->AddBuffIcon(NewBuff);
+		}
+	}
+}
+
+void ASpartaCharacter::RemoveBuff(TSubclassOf<UBuffBase> BuffClass)
+{
+	if (UBuffBase* ExistingBuff = ActiveBuffs.FindRef(BuffClass))
+	{
+		GetWorldTimerManager().ClearTimer(ExistingBuff->ExpireTimerHandle);
+		ActiveBuffs.Remove(BuffClass);
+
+		if (ASpartaPlayerController* SpartaPlayerController = Cast<ASpartaPlayerController>(GetController()))
+		{
+			SpartaPlayerController->RemoveBuffIcon(ExistingBuff);
+		}
+	}
+}
+
+void ASpartaCharacter::SetSpeed(float SpeedMultiplier)
+{
+	NormalSpeed *= SpeedMultiplier;
+	SprintSpeed *= SpeedMultiplier;
+	GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+}
+
+void ASpartaCharacter::ResetSpeed(float SpeedMultiplier)
+{
+	NormalSpeed /= SpeedMultiplier;
+	SprintSpeed /= SpeedMultiplier;
+	GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+}
+
+void ASpartaCharacter::SetReverseControl(const bool bReverse)
+{
+	bIsReverseControl = bReverse;
 }
 
 void ASpartaCharacter::Move(const FInputActionValue& Value)
 {
 	if (!Controller) return;
 
-	const FVector2D MoveInput = Value.Get<FVector2D>();
+	FVector2D MoveInput = Value.Get<FVector2D>();
+
+	if (bIsReverseControl)
+	{
+		MoveInput.X *= -1.0f;
+		MoveInput.Y *= -1.0f;
+	}
 	
 	if (!FMath::IsNearlyZero(MoveInput.X))
 	{
@@ -174,16 +237,16 @@ void ASpartaCharacter::StopSprint(const FInputActionValue& Value)
 	}
 }
 
-void ASpartaCharacter::UpdateOverheadHp()
+void ASpartaCharacter::UpdateHpGauge()
 {
-	if (!OverheadWidget) return;
-
-	if (UUserWidget* OverheadWidgetInstance = OverheadWidget->GetUserWidgetObject())
+	if (ASpartaPlayerController* PlayerController = Cast<ASpartaPlayerController>(GetController()))
 	{
-		if (UTextBlock* HPText = Cast<UTextBlock>(OverheadWidgetInstance->GetWidgetFromName(TEXT("OverheadHP"))))
+		if (UUserWidget* HUDWidgetInstance = PlayerController->GetHUDWidget())
 		{
-			HPText->SetText(FText::FromString(FString::Printf(TEXT("%d / %d"), CurrentHealth, MaxHealth)));
+			if (UProgressBar* HpGaugeBar = Cast<UProgressBar>(HUDWidgetInstance->GetWidgetFromName(TEXT("HpGauge"))))
+			{
+				HpGaugeBar->SetPercent((float)CurrentHealth / MaxHealth);
+			}
 		}
 	}
-	
 }

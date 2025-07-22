@@ -1,23 +1,24 @@
-#include "Item/HealingItem.h"
+#include "Item/SlowingItem.h"
+
+#include "Buff/SlowingBuff.h"
 #include "SpartaCharacter.h"
 
-AHealingItem::AHealingItem()
+ASlowingItem::ASlowingItem()
 {
-	ItemType = "Healing";
-	HealAmount = 20.0f;
+	ItemType = "Slowing";
 }
 
-void AHealingItem::ActivateItem(AActor* Activator)
+void ASlowingItem::ActivateItem(AActor* Activator)
 {
 	Super::ActivateItem(Activator);
-	
+
 	if (Activator && Activator->ActorHasTag("Player"))
 	{
 		if (ASpartaCharacter* Character = Cast<ASpartaCharacter>(Activator))
 		{
-			Character->AddHealth(HealAmount);
+			Character->AddBuff(USlowingBuff::StaticClass());
 		}
-		
+
 		DestroyItem();
 	}
 }

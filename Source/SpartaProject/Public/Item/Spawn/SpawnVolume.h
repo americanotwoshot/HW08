@@ -5,6 +5,7 @@
 #include "GameFramework/Actor.h"
 #include "SpawnVolume.generated.h"
 
+class ASpike;
 class UBoxComponent;
 
 UCLASS()
@@ -17,6 +18,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Spawning")
 	AActor* SpawnRandomItem();
+	UFUNCTION(BlueprintCallable, Category = "Spawning")
+	AActor* SpawnObstacle();
 	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawning|Component")
@@ -26,6 +29,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
 	UDataTable* ItemDataTable;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning")
+	TSubclassOf<AActor> Spike;
 	
 	FVector GetRandomPointInVolume() const;
 	FItemSpawnRow* GetRandomItem() const;

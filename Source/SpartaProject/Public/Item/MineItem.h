@@ -12,10 +12,12 @@ class SPARTAPROJECT_API AMineItem : public ABaseItem
 public:
 	AMineItem();
 
-protected:
 	/** ItemInterface */
 	virtual void ActivateItem(AActor* Activator) override;
 
+	bool IsItemActivated() const;
+	
+protected:
 	/** member methods */
 	void Explode();
 
@@ -26,6 +28,8 @@ protected:
 	UParticleSystem* ExplosionParticle;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Effects")
 	USoundBase* ExplosionSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Material")
+	UMaterialInstanceDynamic* DynamicMaterial;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	float ExplosionDelay;

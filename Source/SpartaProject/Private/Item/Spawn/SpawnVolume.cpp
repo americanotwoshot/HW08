@@ -26,6 +26,14 @@ AActor* ASpawnVolume::SpawnRandomItem()
 	return nullptr;
 }
 
+AActor* ASpawnVolume::SpawnObstacle()
+{
+	FVector SpawnLocation = GetRandomPointInVolume();
+	SpawnLocation.Z = 50.0f;
+	
+	return GetWorld()->SpawnActor<AActor>(Spike, SpawnLocation, FRotator::ZeroRotator);
+}
+
 FVector ASpawnVolume::GetRandomPointInVolume() const
 {
 	const FVector BoxOrigin = SpawningBox->GetComponentLocation();

@@ -4,6 +4,8 @@
 #include "GameFramework/PlayerController.h"
 #include "SpartaPlayerController.generated.h"
 
+class UBuffBase;
+class UBuffContainerWidget;
 class UInputMappingContext;
 class UInputAction;
 
@@ -38,13 +40,30 @@ public:
 	TSubclassOf<UUserWidget> MainMenuWidgetClass;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Menu")
 	UUserWidget* MainMenuWidgetInstance;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameOver")
+	TSubclassOf<UUserWidget> GameOverWidgetClass;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GameOver")
+	UUserWidget* GameOverWidgetInstance;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Buff")
+	TSubclassOf<UBuffContainerWidget> BuffContainerWidgetClass;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Buff")
+	UBuffContainerWidget* BuffContainerWidgetInstance;
 
 	UFUNCTION(BlueprintPure, Category = "HUD")
 	UUserWidget* GetHUDWidget() const;
 	UFUNCTION(BlueprintCallable, Category = "HUD")
 	void ShowGameHUD();
 	UFUNCTION(BlueprintCallable, Category = "Menu")
-	void ShowMainMenu(bool bIsRestart);
+	void ShowMainMenu();
 	UFUNCTION(BlueprintCallable, Category = "Menu")
 	void StartGame();
+	UFUNCTION(BlueprintCallable, Category = "GameOver")
+	void ShowGameOverMenu();
+
+	void AddBuffIcon(UBuffBase* Buff);
+	void RemoveBuffIcon(UBuffBase* Buff);
+	void BlindGame(const bool bBlind);
+
+private:
+	void ResetUI();
 };
